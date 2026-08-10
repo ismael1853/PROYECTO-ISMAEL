@@ -1,0 +1,17 @@
+{
+  "name": "proyecto-ismael",
+  "version": "1.0.0",
+  "description": "Sistema de Inventario Tecnologico CORPOELEC",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "pdfkit": "^0.15.0",
+    "pg": "^8.11.5",
+    "qrcode": "^1.5.3"
+  }
+}

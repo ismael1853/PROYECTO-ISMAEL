@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIV-CORPOELEC - Sistema de Inventario</title>
+    <script src="https://tailwindcss.com"></script>
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- Barra de Navegación Corporativa -->
+    <nav class="bg-[#5C2414] text-white p-4 flex justify-between items-center border-b-4 border-[#76A035]">
+        <div class="flex items-center space-x-3">
+            <!-- Espacio para Logo de Corpoelec -->
+            <div class="bg-white p-1 rounded font-bold text-[#5C2414] text-sm">CORPOELEC</div>
+            <span class="text-xl font-bold tracking-wider">SIV - Sistema de Inventario Tecnológico</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-sm bg-[#76A035] px-3 py-1 rounded-full">Rol: Administrador</span>
+            <a href="#" class="hover:underline text-sm font-semibold">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <div class="p-6 max-w-7xl mx-auto">
+        
+        <!-- Mensaje de Bienvenida -->
+        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#76A035] mb-6">
+            <h2 class="text-lg font-bold text-gray-800">Bienvenido al Panel de Control de Inventario</h2>
+            <p class="text-sm text-gray-600">Región Capital / Dirección de Tecnología de la Información y Telecomunicaciones</p>
+        </div>
+
+        <!-- 📊 Indicadores Principales (Cajones de Estadísticas) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            
+            <!-- Cajón Solicitado: Equipos Informáticos -->
+            <div class="bg-[#5C2414] text-white p-6 rounded-xl shadow-md border-b-8 border-[#76A035]">
+                <p class="text-sm font-medium uppercase tracking-wider opacity-80">Equipos Informáticos</p>
+                <h3 class="text-4xl font-black mt-2" id="count-informatic">1,245</h3>
+                <p class="text-xs mt-2 opacity-75">Laptops, CPUs, Monitores...</p>
+            </div>
+
+            <!-- Cajón: Equipos de Telecomunicaciones -->
+            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md border-b-8 border-gray-400">
+                <p class="text-sm font-medium uppercase tracking-wider text-gray-500">Telecomunicaciones</p>
+                <h3 class="text-4xl font-black text-[#5C2414] mt-2" id="count-telecom">382</h3>
+                <p class="text-xs mt-2 text-gray-400">Radios, Multiplexores, Switches...</p>
+            </div>
+
+            <!-- Cajón: Respaldo Eléctrico -->
+            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md border-b-8 border-gray-400">
+                <p class="text-sm font-medium uppercase tracking-wider text-gray-500">Energía / UPS</p>
+                <h3 class="text-4xl font-black text-[#5C2414] mt-2" id="count-ups">89</h3>
+                <p class="text-xs mt-2 text-gray-400 font-medium">Sistemas de Respaldo</p>
+            </div>
+
+            <!-- Cajón: Personal Registrado -->
+            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md border-b-8 border-gray-400">
+                <p class="text-sm font-medium uppercase tracking-wider text-gray-500">Usuarios/Personal</p>
+                <h3 class="text-4xl font-black text-[#5C2414] mt-2" id="count-users">512</h3>
+                <p class="text-xs mt-2 text-gray-400">Personal con asignaciones</p>
+            </div>
+        </div>
+
+        <!-- Sección de Acciones Rápidas y Consultas -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Panel de Consultas Personalizadas -->
+            <div class="bg-white p-6 rounded-xl shadow-md lg:col-span-2">
+                <h3 class="text-lg font-bold text-[#5C2414] mb-4 border-b pb-2">🔍 Consultas Personalizadas</h3>
+                <form class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase">Ubicación / Piso</label>
+                        <select class="w-full mt-1 p-2 border rounded text-sm bg-gray-50">
+                            <option>Todos</option>
+                            <option>Piso 1</option>
+                            <option>Piso 2</option>
+                            <option>Sede Principal (Chacao)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase">Tipo de Equipo</label>
+                        <select class="w-full mt-1 p-2 border rounded text-sm bg-gray-50">
+                            <option>Todos</option>
+                            <option>Laptop</option>
+                            <option>Switch</option>
+                            <option>Radio Multiplexor</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="button" class="w-full bg-[#76A035] text-white p-2 rounded text-sm font-bold hover:bg-opacity-90 transition">Filtrar Datos</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panel de Reportes -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h3 class="text-lg font-bold text-[#5C2414] mb-4 border-b pb-2">📦 Generar Reportes</h3>
+                <p class="text-xs text-gray-500 mb-4">Los reportes incluyen membrete oficial de CORPOELEC y códigos QR auto-generados.</p>
+                <div class="space-y-3">
+                    <button onclick="exportPDF()" class="w-full bg-red-700 text-white p-3 rounded-lg font-bold text-sm flex justify-center items-center hover:bg-opacity-90">
+                        📄 Descargar Reporte PDF
+                    </button>
+                    <button onclick="exportExcel()" class="w-full bg-green-700 text-white p-3 rounded-lg font-bold text-sm flex justify-center items-center hover:bg-opacity-90">
+                        📊 Descargar Data en Excel
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function exportPDF() { alert('Generando PDF con Membrete CORPOELEC y Código QR adjunto...'); }
+        function exportExcel() { alert('Exportando matriz de inventario a formato .xlsx...'); }
+    </script>
+</body>
+</html>
