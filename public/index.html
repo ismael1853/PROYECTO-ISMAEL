@@ -4,75 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIV-CORPOELEC - Sistema de Inventario</title>
-    <link href="https://cloudflare.com" rel="stylesheet"> 
-    <script src="https://jsdelivr.net"></script>
-</head>
-<body class="bg-gray-100 font-sans">
+    <style>
+        /* Estilos Base Corporativos CORPOELEC */
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #1f2937; }
+        nav { background-color: #5C2414; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #76A035; }
+        .nav-logo-box { background-color: white; padding: 0.25rem 0.5rem; rounded: 0.25rem; font-weight: bold; color: #5C2414; font-size: 0.875rem; border-radius: 4px; }
+        .nav-title { font-size: 1.25rem; font-weight: 700; tracking-wider: 0.05em; margin-left: 0.75rem; }
+        .badge-rol { background-color: #76A035; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; }
+        .container { padding: 1.5rem; max-width: 80rem; margin: 0 auto; }
+        .banner { background-color: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #76A035; margin-bottom: 1.5rem; }
+        .banner h2 { margin: 0; font-size: 1.125rem; color: #1f2937; }
+        .banner p { margin: 0.25rem 0 0 0; font-size: 0.875rem; color: #4b5563; }
+        
+        /* Contenedores de los Cajones de Estadísticas */
+        .grid-cajones { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        @media (min-width: 768px) { .grid-cajones { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        .cajon { padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .cajon-principal { background-color: #5C2414; color: white; border-bottom: 8px solid #76A035; }
+        .cajon-secundario { background-color: white; color: #1f2937; border-bottom: 8px solid #9ca3af; }
+        .cajon-title { font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; opacity: 0.9; }
+        .cajon-secundario .cajon-title { color: #6b7280; }
+        .cajon-numero { font-size: 2.25rem; font-weight: 900; margin: 0.5rem 0 0 0; }
+        .cajon-principal .cajon-numero { color: white; }
+        .cajon-secundario .cajon-numero { color: #5C2414; }
+        .cajon-desc { font-size: 0.75rem; margin: 0.5rem 0 0 0; opacity: 0.8; }
+        .cajon-secundario .cajon-desc { color: #9ca3af; }
 
-    <!-- Barra de Navegación Corporativa -->
-    <nav class="bg-[#5C2414] text-white p-4 flex justify-between items-center border-b-4 border-[#76A035]">
-        <div class="flex items-center space-x-3">
-            <!-- Espacio para Logo de Corpoelec -->
-            <div class="bg-white p-1 rounded font-bold text-[#5C2414] text-sm">CORPOELEC</div>
-            <span class="text-xl font-bold tracking-wider">SIV - Sistema de Inventario Tecnológico</span>
+        /* Estructura de Formularios y Reportes */
+        .grid-secciones { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.5rem; }
+        @media (min-width: 1024px) { .grid-secciones { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .panel { background-color: white; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .col-span-2 { grid-column: span 2 / span 2; }
+        .panel-title { font-size: 1.125rem; font-weight: 700; color: #5C2414; margin: 0 0 1rem 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1rem; }
+        @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        label { display: block; font-size: 0.75rem; font-weight: 700; color: #374151; text-transform: uppercase; }
+        select, input { width: 100%; margin-top: 0.25rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-size: 0.875rem; background-color: #f9fafb; box-sizing: border-box; }
+        .btn { width: 100%; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 700; border: none; cursor: pointer; transition: background-color 0.2s; text-align: center; }
+        .btn-verde { background-color: #76A035; color: white; }
+        .btn-verde:hover { background-color: #64862c; }
+        .btn-pdf { background-color: #b91c1c; color: white; margin-bottom: 0.75rem; padding: 0.75rem; font-size: 0.875rem; }
+        .btn-excel { background-color: #15803d; color: white; padding: 0.75rem; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div style="display: flex; align-items: center;">
+            <div class="nav-logo-box">CORPOELEC</div>
+            <span class="nav-title">SIV - Sistema de Inventario Tecnológico</span>
         </div>
-        <div class="flex items-center space-x-4">
-            <span class="text-sm bg-[#76A035] px-3 py-1 rounded-full">Rol: Administrador</span>
-            <a href="#" class="hover:underline text-sm font-semibold">Cerrar Sesión</a>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <span class="badge-rol">Rol: Administrador</span>
+            <a href="#" style="color: white; text-decoration: underline; font-size: 0.875rem; font-weight: 600;">Cerrar Sesión</a>
         </div>
     </nav>
 
-    <!-- Contenedor Principal -->
-    <div class="p-6 max-w-7xl mx-auto">
-        
-        <!-- Mensaje de Bienvenida -->
-        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-[#76A035] mb-6">
-            <h2 class="text-lg font-bold text-gray-800">Bienvenido al Panel de Control de Inventario</h2>
-            <p class="text-sm text-gray-600">Región Capital / Dirección de Tecnología de la Información y Telecomunicaciones</p>
+    <div class="container">
+        <div class="banner">
+            <h2>Bienvenido al Panel de Control de Inventario</h2>
+            <p>Región Capital / Dirección de Tecnología de la Información y Telecomunicaciones</p>
         </div>
 
-        <!-- 📊 Indicadores Principales (Cajones de Estadísticas) -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            
-            <!-- Cajón Solicitado: Equipos Informáticos -->
-            <div class="bg-[#5C2414] text-white p-6 rounded-xl shadow-md border-b-8 border-[#76A035]">
-                <p class="text-sm font-medium uppercase tracking-wider opacity-80">Equipos Informáticos</p>
-                <h3 class="text-4xl font-black mt-2" id="count-informatic">1,245</h3>
-                <p class="text-xs mt-2 opacity-75">Laptops, CPUs, Monitores...</p>
+        <div class="grid-cajones">
+            <div class="cajon cajon-principal">
+                <p class="cajon-title">Equipos Informáticos</p>
+                <h3 class="cajon-numero" id="count-informatic">1,245</h3>
+                <p class="cajon-desc">Laptops, CPUs, Monitores...</p>
             </div>
-
-            <!-- Cajón: Equipos de Telecomunicaciones -->
-            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md border-b-8 border-gray-400">
-                <p class="text-sm font-medium uppercase tracking-wider text-gray-500">Telecomunicaciones</p>
-                <h3 class="text-4xl font-black text-[#5C2414] mt-2" id="count-telecom">382</h3>
-                <p class="text-xs mt-2 text-gray-400">Radios, Multiplexores, Switches...</p>
+            <div class="cajon cajon-secundario">
+                <p class="cajon-title">Telecomunicaciones</p>
+                <h3 class="cajon-numero" id="count-telecom">382</h3>
+                <p class="cajon-desc">Radios, Multiplexores, Switches...</p>
             </div>
-
-            <!-- Cajón: Respaldo Eléctrico -->
-            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md border-b-8 border-gray-400">
-                <p class="text-sm font-medium uppercase tracking-wider text-gray-500">Energía / UPS</p>
-                <h3 class="text-4xl font-black text-[#5C2414] mt-2" id="count-ups">89</h3>
-                <p class="text-xs mt-2 text-gray-400 font-medium">Sistemas de Respaldo</p>
+            <div class="cajon cajon-secundario">
+                <p class="cajon-title">Energía / UPS</p>
+                <h3 class="cajon-numero" id="count-ups">89</h3>
+                <p class="cajon-desc">Sistemas de Respaldo</p>
             </div>
-
-            <!-- Cajón: Personal Registrado -->
-            <div class="bg-white text-gray-800 p-6 rounded-xl shadow-md border-b-8 border-gray-400">
-                <p class="text-sm font-medium uppercase tracking-wider text-gray-500">Usuarios/Personal</p>
-                <h3 class="text-4xl font-black text-[#5C2414] mt-2" id="count-users">512</h3>
-                <p class="text-xs mt-2 text-gray-400">Personal con asignaciones</p>
+            <div class="cajon cajon-secundario">
+                <p class="cajon-title">Usuarios/Personal</p>
+                <h3 class="cajon-numero" id="count-users">512</h3>
+                <p class="cajon-desc">Personal con asignaciones</p>
             </div>
         </div>
 
-        <!-- Sección de Acciones Rápidas y Consultas -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Panel de Consultas Personalizadas -->
-            <div class="bg-white p-6 rounded-xl shadow-md lg:col-span-2">
-                <h3 class="text-lg font-bold text-[#5C2414] mb-4 border-b pb-2">🔍 Consultas Personalizadas</h3>
-                <form class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid-secciones">
+            <div class="panel col-span-2">
+                <h3 class="panel-title">🔍 Consultas Personalizadas</h3>
+                <form class="form-grid">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase">Ubicación / Piso</label>
-                        <select class="w-full mt-1 p-2 border rounded text-sm bg-gray-50">
+                        <label>Ubicación / Piso</label>
+                        <select>
                             <option>Todos</option>
                             <option>Piso 1</option>
                             <option>Piso 2</option>
@@ -80,40 +104,31 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase">Tipo de Equipo</label>
-                        <select class="w-full mt-1 p-2 border rounded text-sm bg-gray-50">
+                        <label>Tipo de Equipo</label>
+                        <select>
                             <option>Todos</option>
                             <option>Laptop</option>
                             <option>Switch</option>
                             <option>Radio Multiplexor</option>
                         </select>
                     </div>
-                    <div class="flex items-end">
-                        <button type="button" class="w-full bg-[#76A035] text-white p-2 rounded text-sm font-bold hover:bg-opacity-90 transition">Filtrar Datos</button>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button type="button" class="btn btn-verde">Filtrar Datos</button>
                     </div>
                 </form>
             </div>
 
-            <!-- Panel de Reportes -->
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h3 class="text-lg font-bold text-[#5C2414] mb-4 border-b pb-2">📦 Generar Reportes</h3>
-                <p class="text-xs text-gray-500 mb-4">Los reportes incluyen membrete oficial de CORPOELEC y códigos QR auto-generados.</p>
-                <div class="space-y-3">
-                    <button onclick="exportPDF()" class="w-full bg-red-700 text-white p-3 rounded-lg font-bold text-sm flex justify-center items-center hover:bg-opacity-90">
-                        📄 Descargar Reporte PDF
-                    </button>
-                    <button onclick="exportExcel()" class="w-full bg-green-700 text-white p-3 rounded-lg font-bold text-sm flex justify-center items-center hover:bg-opacity-90">
-                        📊 Descargar Data en Excel
-                    </button>
-                </div>
+            <div class="panel">
+                <h3 class="panel-title">📦 Generar Reportes</h3>
+                <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem;">Los reportes incluyen membrete oficial de CORPOELEC y códigos QR auto-generados.</p>
+                <button onclick="exportPDF()" class="btn btn-pdf">📄 Descargar Reporte PDF</button>
+                <button onclick="exportExcel()" class="btn btn-excel">📊 Descargar Data en Excel</button>
             </div>
-
         </div>
-
     </div>
 
     <script>
-        function exportPDF() { alert('Generando PDF con Membrete CORPOELEC y Código QR adjunto...'); }
+        function exportPDF() { alert('Generando PDF con Membrete CORPOELEC y Código QR...'); }
         function exportExcel() { alert('Exportando matriz de inventario a formato .xlsx...'); }
     </script>
 </body>
