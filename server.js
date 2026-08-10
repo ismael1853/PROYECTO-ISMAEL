@@ -5,6 +5,16 @@ const QRCode = require('qrcode');
 const fs = require('fs');
 const app = express();
 
+const path = require('path');
+
+// Servir los archivos de la interfaz desde la carpeta public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ruta principal para enviar el archivo index.html de CORPOELEC
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.use(express.json());
 
 // --- MOCK DATABASE (Ejemplo de la estructura que irá en la nube) ---
