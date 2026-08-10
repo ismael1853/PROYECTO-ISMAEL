@@ -1,126 +1,212 @@
+require('dotenv').config();
 const express = require('express');
+const { Pool } = require('pg');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
-const fs = require('fs');
-const app = express();
-
 const path = require('path');
 
-// Servir los archivos de la interfaz desde la carpeta public
+const app = express();
+app.use(express.json());
+
+// Servir la interfaz estática desde la carpeta public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta principal para enviar el archivo index.html de CORPOELEC
+// Conexión a la Base de Datos en la Nube (Supabase)
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false } // Requerido por Supabase para conexiones seguras
+});
+
+// Ruta raíz obligatoria para el inicio del sistema
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.use(express.json());
-
-// --- MOCK DATABASE (Ejemplo de la estructura que irá en la nube) ---
-let bitacoraAccesos = [];
-let inventarioEquipos = [
-    { 
-        id: "EQ-001", tipo: "Laptop", marca: "Lenovo", modelo: "ThinkPad E14", serial: "L3X9921A",
-        ram: "16GB", disco: "512GB SSD", mac: "00:1A:2B:3C:4D:5E", ip: "10.40.12.55",
-        ubicacion: "Sede Centro", piso: "Piso 4",
-        asignadoA: { nombre: "Pedro", apellido: "Pérez", cedula: "V-15.342.111", nPersonal: "CORP-9942", depto: "Distribución", correo: "pperez@corpoelec.gob.ve" }
-    }
-];
-
-// --- 🔐 REGISTRO DE ACCESOS (BITÁCORA) ---
-app.post('/api/auth/login', (req, res) => {
+// --- 🔐 LOGIC DE ACCESOS Y BITÁCORA ---
+app.post('/api/auth/login', async (req, res) => {
     const { usuario, clave } = req.body;
-    
-    // Validación lógica de roles (Simulación)
-    const acceso = {
-        usuario: usuario,
-        fecha: new Date().toISOString(),
-        ip_origen: req.ip,
-        evento: "Inicio de sesión exitoso"
-    };
-    
-    bitacoraAccesos.push(acceso);
-    console.log("Bitácora actualizada:", acceso);
-    res.json({ success: true, token: "session-token-valid-corpoelec", rol: "Admin" });
+    const ipOrigen = req.ip;
+    try {
+        const result = await pool.query('SELECT * FROM usuarios_sistema WHERE usuario = $1', [usuario]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ success: false, message: "Usuario no registrado" });
+        }
+        const user = result.rows[0];
+        await pool.query(
+            'INSERT INTO bitacora_accesos (usuario, ip_origen, evento) VALUES ($1, $2, $3)',
+            [usuario, ipOrigen, `Inicio de sesión exitoso - Rol: ${user.rol}`]
+        );
+        res.json({ success: true, rol: user.rol });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Error en el servidor" });
+    }
 });
 
-// --- 📊 EXCEL: REPORTE DE INVENTARIO ---
-app.get('/api/reportes/excel', async (req, res) => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Inventario Tecnológico');
+// --- 📊 CAJÓN DE ESTADÍSTICAS (PANTALLA PRINCIPAL) ---
+app.get('/api/dashboard/contadores', async (req, res) => {
+    try {
+        const informatic = await pool.query("SELECT COUNT(*)::int FROM inventario WHERE tipo_equipo IN ('Laptop', 'CPU', 'Monitor', 'Teclado', 'Mouse', 'Regulador')");
+        const telecom = await pool.query("SELECT COUNT(*)::int FROM inventario WHERE tipo_equipo IN ('Radio', 'Multiplexor', 'Switch')");
+        const ups = await pool.query("SELECT COUNT(*)::int FROM inventario WHERE tipo_equipo = 'UPS'");
+        const users = await pool.query("SELECT COUNT(*)::int FROM personal");
 
-    worksheet.columns = [
-        { header: 'ID', key: 'id', width: 10 },
-        { header: 'Tipo', key: 'tipo', width: 15 },
-        { header: 'Marca', key: 'marca', width: 15 },
-        { header: 'Serial', key: 'serial', width: 20 },
-        { header: 'Ubicación', key: 'ubicacion', width: 15 },
-        { header: 'Asignado A', key: 'responsable', width: 25 }
-    ];
-
-    inventarioEquipos.forEach(eq => {
-        worksheet.addRow({
-            id: eq.id,
-            tipo: eq.tipo,
-            marca: eq.marca,
-            serial: eq.serial,
-            ubicacion: `${eq.ubicacion} - ${eq.piso}`,
-            responsable: `${eq.asignadoA.nombre} ${eq.asignadoA.apellido} (${eq.asignadoA.cedula})`
+        res.json({
+            informatic: informatic.rows[0].count,
+            telecom: telecom.rows[0].count,
+            ups: ups.rows[0].count,
+            users: users.rows[0].count
         });
-    });
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=Inventario_CORPOELEC.xlsx');
-    await workbook.xlsx.write(res);
-    res.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error al obtener estadísticas");
+    }
 });
 
-// --- 📄 PDF: REPORTE CON MEMBRETE Y CÓDIGO QR ---
-app.get('/api/reportes/pdf', async (req, res) => {
-    const doc = new PDFDocument({ margin: 50 });
-    
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=Ficha_Inventario_Corpoelec.pdf');
-    doc.pipe(res);
+// --- 💾 ENDPOINT: REGISTRAR TRABAJADOR Y ASIGNAR EQUIPO ---
+app.post('/api/inventario/registrar', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const {
+            cedula, nombre, apellido, n_personal, departamento, correo_corporativo,
+            tipo_equipo, marca, modelo, serial, ram, disco_duro, telefono_ip, mac_address, ubicacion, piso
+        } = req.body;
 
-    // Membrete Oficial (Estructura de Texto / Logo Corporativo)
-    doc.fontSize(10).text("CORPOELEC - MINISTERIO DEL PODER POPULAR PARA LA ENERGÍA ELÉCTRICA", { align: 'center' });
-    doc.text("DIVISIÓN DE TELECOMUNICACIONES E INFORMÁTICA", { align: 'center' });
-    doc.moveDown();
-    doc.strokeColor("#5C2414").lineWidth(3).moveTo(50, 85).lineTo(550, 85).stroke(); // Línea color Marrón Corpoelec
-    
-    doc.moveDown(2);
-    doc.fontSize(16).fillColor("#5C2414").text("FICHA DE ASIGNACIÓN DE ACTIVOS TECNOLÓGICOS", { align: 'center', bold: true });
-    doc.moveDown();
+        const queryPersonal = `
+            INSERT INTO personal (cedula, nombre, apellido, n_personal, departamento, correo_corporativo)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (cedula) 
+            DO UPDATE SET departamento = $5, correo_corporativo = $6
+            RETURNING cedula;
+        `;
+        await client.query(queryPersonal, [cedula, nombre, apellido, n_personal, departamento, correo_corporativo]);
 
-    // Data del equipo
-    const equipo = inventarioEquipos[0];
-    doc.fontSize(11).fillColor("#000000");
-    doc.text(`Tipo de Activo: ${equipo.tipo}`);
-    doc.text(`Marca / Modelo: ${equipo.marca} ${equipo.modelo}`);
-    doc.text(`Número de Serial: ${equipo.serial}`);
-    doc.text(`Especificaciones: RAM: ${equipo.ram} | Disco: ${equipo.disco}`);
-    doc.text(`Red: MAC: ${equipo.mac} | IP asignada: ${equipo.ip}`);
-    doc.text(`Ubicación Física: ${equipo.ubicacion}, ${equipo.piso}`);
-    
-    doc.moveDown();
-    doc.text("DATOS DEL USUARIO ASIGNADO:", { underline: true });
-    doc.text(`Nombre y Apellido: ${equipo.asignadoA.nombre} ${equipo.asignadoA.apellido}`);
-    doc.text(`Cédula / N° Personal: ${equipo.asignadoA.cedula} / ${equipo.asignadoA.nPersonal}`);
-    doc.text(`Departamento / Correo: ${equipo.asignadoA.depto} - ${equipo.asignadoA.correo}`);
+        const queryInventario = `
+            INSERT INTO inventario (tipo_equipo, marca, modelo, serial, ram, disco_duro, telefono_ip, mac_address, ubicacion, piso, cedula_asignado)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+        `;
+        await client.query(queryInventario, [tipo_equipo, marca, modelo, serial, ram, disco_duro, telefono_ip, mac_address, ubicacion, piso, cedula]);
 
-    // Generar e Incrustar Código QR con la metadata completa del equipo
-    const qrDataText = `ID: ${equipo.id} | Serial: ${equipo.serial} | Asignado a: ${equipo.asignadoA.cedula}`;
-    const qrBuffer = await QRCode.toBuffer(qrDataText);
-    
-    doc.image(qrBuffer, 430, 120, { width: 100 }); // Posiciona el QR arriba a la derecha
-    
-    doc.moveDown(4);
-    doc.text("___________________________               ___________________________", { align: 'center' });
-    doc.text("Entregado por (Soporte TI)                      Recibido por (Usuario)", { align: 'center' });
-
-    doc.end();
+        await client.query('COMMIT');
+        res.json({ success: true, message: "Registro completado con éxito" });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("Error en la transacción de guardado:", err);
+        if (err.code === '23505') {
+            res.status(400).json({ success: false, message: "El número de serial o ficha del personal ya se encuentra registrado." });
+        } else {
+            res.status(500).json({ success: false, message: "Error interno del servidor al procesar la data." });
+        }
+    } finally {
+        client.release();
+    }
 });
 
-app.listen(3000, () => console.log('Servidor SIV-CORPOELEC corriendo en puerto 3000'));
+// --- 📊 EXCEL: REPORTE DE INVENTARIO COMPLETO ---
+app.get('/api/reportes/excel', async (req, res) => {
+    try {
+        const queryText = `
+            SELECT i.*, p.nombre, p.apellido, p.n_personal, p.departamento 
+            FROM inventario i 
+            LEFT JOIN personal p ON i.cedula_asignado = p.cedula`;
+        const result = await pool.query(queryText);
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Inventario Tecnológico');
+
+        worksheet.columns = [
+            { header: 'ID', key: 'id', width: 10 },
+            { header: 'Tipo Equipo', key: 'tipo_equipo', width: 15 },
+            { header: 'Marca', key: 'marca', width: 15 },
+            { header: 'Modelo', key: 'modelo', width: 15 },
+            { header: 'Serial', key: 'serial', width: 20 },
+            { header: 'Ubicación', key: 'ubicacion', width: 15 },
+            { header: 'Piso', key: 'piso', width: 15 },
+            { header: 'Responsable', key: 'responsable', width: 25 }
+        ];
+
+        result.rows.forEach(eq => {
+            worksheet.addRow({
+                id: eq.id,
+                tipo_equipo: eq.tipo_equipo,
+                marca: eq.marca,
+                modelo: eq.modelo,
+                serial: eq.serial,
+                ubicacion: eq.ubicacion,
+                piso: eq.piso,
+                responsable: eq.nombre ? `${eq.nombre} ${eq.apellido} (${eq.n_personal})` : 'Sin Asignar'
+            });
+        });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=Inventario_CORPOELEC.xlsx');
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error generando Excel");
+    }
+});
+
+// --- 📄 PDF: REPORTE INDIVIDUAL CON MEMBRETE Y QR ---
+app.get('/api/reportes/pdf/:id', async (req, res) => {
+    const equipoId = req.params.id;
+    try {
+        const queryText = `
+            SELECT i.*, p.nombre, p.apellido, p.n_personal, p.departamento, p.correo_corporativo 
+            FROM inventario i 
+            LEFT JOIN personal p ON i.cedula_asignado = p.cedula 
+            WHERE i.id = $1`;
+        
+        const result = await pool.query(queryText, [equipoId]);
+        if (result.rows.length === 0) return res.status(404).send("Equipo no encontrado");
+        
+        const eq = result.rows[0];
+        const doc = new PDFDocument({ margin: 50 });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=Ficha_${eq.serial}.pdf`);
+        doc.pipe(res);
+
+        doc.fontSize(10).text("CORPOELEC - MINISTERIO DEL PODER POPULAR PARA LA ENERGÍA ELÉCTRICA", { align: 'center' });
+        doc.text("DIVISIÓN DE TELECOMUNICACIONES E INFORMÁTICA", { align: 'center' });
+        doc.moveDown();
+        doc.strokeColor("#5C2414").lineWidth(3).moveTo(50, 85).lineTo(550, 85).stroke(); 
+        
+        doc.moveDown(2);
+        doc.fontSize(14).fillColor("#5C2414").text("FICHA DE ASIGNACIÓN DE ACTIVOS TECNOLÓGICOS", { align: 'center', bold: true });
+        doc.moveDown();
+
+        doc.fontSize(11).fillColor("#000000");
+        doc.text(`Tipo de Activo: ${eq.tipo_equipo}`);
+        doc.text(`Marca / Modelo: ${eq.marca} / ${eq.modelo}`);
+        doc.text(`Número de Serial: ${eq.serial}`);
+        doc.text(`Especificaciones: RAM: ${eq.ram || 'N/A'} | Disco: ${eq.disco_duro || 'N/A'}`);
+        doc.text(`Red: MAC: ${eq.mac_address || 'N/A'} | IP: ${eq.telefono_ip || 'N/A'}`);
+        doc.text(`Ubicación Física: ${eq.ubicacion} - Piso: ${eq.piso}`);
+        
+        doc.moveDown();
+        doc.text("DATOS DEL USUARIO RESPONSABLE:", { underline: true });
+        doc.text(`Nombre y Apellido: ${eq.nombre} ${eq.apellido}`);
+        doc.text(`Cédula / N° Personal: ${eq.cedula_asignado} / ${eq.n_personal}`);
+        doc.text(`Departamento / Correo: ${eq.departamento} - ${eq.correo_corporativo}`);
+
+        const qrDataText = `ID: ${eq.id} | Serial: ${eq.serial} | Responsable: ${eq.cedula_asignado}`;
+        const qrBuffer = await QRCode.toBuffer(qrDataText);
+        doc.image(qrBuffer, 440, 110, { width: 100 }); 
+        
+        doc.moveDown(4);
+        doc.text("___________________________               ___________________________", { align: 'center' });
+        doc.text("Entregado por (Soporte TI)                      Recibido por (Usuario)", { align: 'center' });
+
+        doc.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error generando PDF");
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor de CORPOELEC corriendo en puerto ${PORT}`));
