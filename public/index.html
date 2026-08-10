@@ -126,6 +126,114 @@
             </div>
         </div>
     </div>
+        <!-- 📝 FORMULARIO DE REGISTRO Y ASIGNACIÓN CORPOELEC -->
+        <div class="panel" style="margin-top: 1.5rem;">
+            <h3 class="panel-title">📝 Registro de Equipos y Asignación de Personal</h3>
+            <form id="form-registro" style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.5rem;">
+                
+                <!-- Sección de Datos del Equipo Informático/Telecom -->
+                <div>
+                    <h4 style="color: #5C2414; font-size: 0.875rem; margin-bottom: 0.75rem; border-bottom: 1px dashed #d1d5db; padding-bottom: 0.25rem;">DATOS TÉCNICOS DEL ACTIVO</h4>
+                    <div class="form-grid">
+                        <div>
+                            <label>Tipo de Equipo</label>
+                            <select id="eq-tipo" required>
+                                <option value="Laptop">Laptop</option>
+                                <option value="CPU">Equipo de Mesa: CPU</option>
+                                <option value="Monitor">Equipo de Mesa: Monitor</option>
+                                <option value="Teclado">Equipo de Mesa: Teclado</option>
+                                <option value="Mouse">Equipo de Mesa: Mouse</option>
+                                <option value="Regulador">Equipo de Mesa: Regulador</option>
+                                <option value="Radio">Radio</option>
+                                <option value="Multiplexor">Multiplexor</option>
+                                <option value="Switch">Switch</option>
+                                <option value="UPS">UPS</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Marca</label>
+                            <input type="text" id="eq-marca" placeholder="Ej: Lenovo, Cisco, HP" required>
+                        </div>
+                        <div>
+                            <label>Modelo</label>
+                            <input type="text" id="eq-modelo" placeholder="Ej: ThinkPad E14" required>
+                        </div>
+                    </div>
+                    <div class="form-grid" style="margin-top: 1rem;">
+                        <div>
+                            <label>Número de Serial</label>
+                            <input type="text" id="eq-serial" placeholder="Serial único del equipo" required>
+                        </div>
+                        <div>
+                            <label>Memoria RAM (Laptops/PC)</label>
+                            <input type="text" id="eq-ram" placeholder="Ej: 16GB (Opcional)">
+                        </div>
+                        <div>
+                            <label>Capacidad Disco Duro</label>
+                            <input type="text" id="eq-disco" placeholder="Ej: 512GB SSD (Opcional)">
+                        </div>
+                    </div>
+                    <div class="form-grid" style="margin-top: 1rem;">
+                        <div>
+                            <label>Teléfono IP (Si aplica)</label>
+                            <input type="text" id="eq-ip" placeholder="Ej: Ext. 4412">
+                        </div>
+                        <div>
+                            <label>Dirección MAC Address</label>
+                            <input type="text" id="eq-mac" placeholder="Ej: 00:1A:2B:3C:4D:5E">
+                        </div>
+                        <div>
+                            <label>Ubicación / Sede</label>
+                            <input type="text" id="eq-ubicacion" placeholder="Ej: Sede Chacao" required>
+                        </div>
+                    </div>
+                    <div class="form-grid" style="margin-top: 1rem;">
+                        <div>
+                            <label>Piso / Oficina</label>
+                            <input type="text" id="eq-piso" placeholder="Ej: Piso 4 - Telecomunicaciones" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Datos del Trabajador de Corpoelec -->
+                <div style="margin-top: 1rem;">
+                    <h4 style="color: #5C2414; font-size: 0.875rem; margin-bottom: 0.75rem; border-bottom: 1px dashed #d1d5db; padding-bottom: 0.25rem;">DATOS DEL TRABAJADOR ASIGNADO</h4>
+                    <div class="form-grid">
+                        <div>
+                            <label>Nombres</label>
+                            <input type="text" id="user-nombre" placeholder="Nombre del empleado" required>
+                        </div>
+                        <div>
+                            <label>Apellidos</label>
+                            <input type="text" id="user-apellido" placeholder="Apellido del empleado" required>
+                        </div>
+                        <div>
+                            <label>Cédula de Identidad</label>
+                            <input type="text" id="user-cedula" placeholder="Ej: V-12345678" required>
+                        </div>
+                    </div>
+                    <div class="form-grid" style="margin-top: 1rem;">
+                        <div>
+                            <label>N° de Personal (Ficha)</label>
+                            <input type="text" id="user-ficha" placeholder="Ej: CORP-10442" required>
+                        </div>
+                        <div>
+                            <label>Departamento / División</label>
+                            <input type="text" id="user-depto" placeholder="Ej: Distribución" required>
+                        </div>
+                        <div>
+                            <label>Correo Electrónico Corporativo</label>
+                            <input type="email" id="user-correo" placeholder="usuario@corpoelec.gob.ve" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón de Envío -->
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-verde" style="width: auto; padding: 0.75rem 2.5rem; font-size: 1rem;">💾 Guardar Registro y Procesar Asignación</button>
+                </div>
+            </form>
+        </div>
 
     <script>
         function exportPDF() { alert('Generando PDF con Membrete CORPOELEC y Código QR...'); }
