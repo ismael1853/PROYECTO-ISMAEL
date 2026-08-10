@@ -235,9 +235,79 @@
             </form>
         </div>
 
-    <script>
-        function exportPDF() { alert('Generando PDF con Membrete CORPOELEC y Código QR...'); }
-        function exportExcel() { alert('Exportando matriz de inventario a formato .xlsx...'); }
+        <script>
+        // --- 📊 FUNCIÓN PARA ACTUALIZAR LOS CAJONES DE ESTADÍSTICAS ---
+        async function cargarContadores() {
+            try {
+                const response = await fetch('/api/dashboard/contadores');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('count-informatic').innerText = data.informatic || 0;
+                    document.getElementById('count-telecom').innerText = data.telecom || 0;
+                    document.getElementById('count-ups').innerText = data.ups || 0;
+                    document.getElementById('count-users').innerText = data.users || 0;
+                }
+            } catch (err) {
+                console.error("Error cargando contadores del Dashboard:", err);
+            }
+        }
+
+        // --- 💾 EVENTO PARA GUARDAR REGISTROS (EQUIPO + USUARIO) ---
+        document.getElementById('form-registro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Recopilar datos del formulario
+            const dataRegistro = {
+                // Datos del activo
+                tipo_equipo: document.getElementById('eq-tipo').value,
+                marca: document.getElementById('eq-marca').value,
+                modelo: document.getElementById('eq-modelo').value,
+                serial: document.getElementById('eq-serial').value,
+                ram: document.getElementById('eq-ram').value || null,
+                disco_duro: document.getElementById('eq-disco').value || null,
+                telefono_ip: document.getElementById('eq-ip').value || null,
+                mac_address: document.getElementById('eq-mac').value || null,
+                ubicacion: document.getElementById('eq-ubicacion').value,
+                piso: document.getElementById('eq-piso').value,
+                
+                // Datos del trabajador
+                nombre: document.getElementById('user-nombre').value,
+                apellido: document.getElementById('user-apellido').value,
+                cedula: document.getElementById('user-cedula').value,
+                n_personal: document.getElementById('user-ficha').value,
+                departamento: document.getElementById('user-depto').value,
+                correo_corporativo: document.getElementById('user-correo').value
+            };
+
+            try {
+                const response = await fetch('/api/inventario/registrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataRegistro)
+                });
+
+                const resultado = await response.json();
+
+                if (resultado.success) {
+                    alert('✅ Registro guardado con éxito en la nube y equipo asignado al trabajador.');
+                    document.getElementById('form-registro').reset(); // Limpiar formulario
+                    cargarContadores(); // Actualizar cajones de estadísticas de inmediato
+                } else {
+                    alert('❌ Error al registrar: ' + resultado.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('❌ Ocurrió un error de conexión con el servidor.');
+            }
+        });
+
+        // Cargar las estadísticas reales apenas abra la página web
+        window.onload = cargarContadores;
+
+        // Marcadores de posición para las funciones de descargas globales
+        function exportPDF() { alert('Función de reporte global en desarrollo. Utiliza las consultas personalizadas.'); }
+        function exportExcel() { window.location.href = '/api/reportes/excel'; }
     </script>
+
 </body>
 </html>
