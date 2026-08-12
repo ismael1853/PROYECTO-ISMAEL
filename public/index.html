@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIV-CORPOELEC - Sistema de Inventario</title>
     <style>
-        /* Estilos Base Corporativos CORPOELEC */
+        /* Estilos Base Corporativos CORPOELEC (Independientes de CDN) */
         body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #1f2937; }
         nav { background-color: #5C2414; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #76A035; }
-        .nav-logo-box { background-color: white; padding: 0.25rem 0.5rem; rounded: 0.25rem; font-weight: bold; color: #5C2414; font-size: 0.875rem; border-radius: 4px; }
+        .nav-logo-box { background-color: white; padding: 0.25rem 0.5rem; font-weight: bold; color: #5C2414; font-size: 0.875rem; border-radius: 4px; }
         .nav-title { font-size: 1.25rem; font-weight: 700; tracking-wider: 0.05em; margin-left: 0.75rem; }
         .badge-rol { background-color: #76A035; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; }
         .container { padding: 1.5rem; max-width: 80rem; margin: 0 auto; }
@@ -25,12 +25,11 @@
         .cajon-title { font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; opacity: 0.9; }
         .cajon-secundario .cajon-title { color: #6b7280; }
         .cajon-numero { font-size: 2.25rem; font-weight: 900; margin: 0.5rem 0 0 0; }
-        .cajon-principal .cajon-numero { color: white; }
         .cajon-secundario .cajon-numero { color: #5C2414; }
         .cajon-desc { font-size: 0.75rem; margin: 0.5rem 0 0 0; opacity: 0.8; }
         .cajon-secundario .cajon-desc { color: #9ca3af; }
 
-        /* Estructura de Formularios y Reportes */
+        /* Estructura de Paneles y Formularios */
         .grid-secciones { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.5rem; }
         @media (min-width: 1024px) { .grid-secciones { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         .panel { background-color: white; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -46,268 +45,111 @@
         .btn-verde:hover { background-color: #64862c; }
         .btn-pdf { background-color: #b91c1c; color: white; margin-bottom: 0.75rem; padding: 0.75rem; font-size: 0.875rem; }
         .btn-excel { background-color: #15803d; color: white; padding: 0.75rem; font-size: 0.875rem; }
+
+        /* Estilos Ventana de Login */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #5C2414; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card { background: white; padding: 2.5rem; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 24rem; border-top: 8px solid #76A035; text-align: center; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div style="display: flex; align-items: center;">
-            <div class="nav-logo-box">CORPOELEC</div>
-            <span class="nav-title">SIV - Sistema de Inventario Tecnológico</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <span class="badge-rol">Rol: Administrador</span>
-            <a href="#" style="color: white; text-decoration: underline; font-size: 0.875rem; font-weight: 600;">Cerrar Sesión</a>
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="banner">
-            <h2>Bienvenido al Panel de Control de Inventario</h2>
-            <p>Región Capital / Dirección de Tecnología de la Información y Telecomunicaciones</p>
-        </div>
-
-        <div class="grid-cajones">
-            <div class="cajon cajon-principal">
-                <p class="cajon-title">Equipos Informáticos</p>
-                <h3 class="cajon-numero" id="count-informatic">0</h3>
-                <p class="cajon-desc">Laptops, CPUs, Monitores...</p>
-            </div>
-            <div class="cajon cajon-secundario">
-                <p class="cajon-title">Telecomunicaciones</p>
-                <h3 class="cajon-numero" id="count-telecom">0</h3>
-                <p class="cajon-desc">Radios, Multiplexores, Switches...</p>
-            </div>
-            <div class="cajon cajon-secundario">
-                <p class="cajon-title">Energía / UPS</p>
-                <h3 class="cajon-numero" id="count-ups">0</h3>
-                <p class="cajon-desc">Sistemas de Respaldo</p>
-            </div>
-            <div class="cajon cajon-secundario">
-                <p class="cajon-title">Usuarios/Personal</p>
-                <h3 class="cajon-numero" id="count-users">0</h3>
-                <p class="cajon-desc">Personal con asignaciones</p>
-            </div>
-        </div>
-
-        <div class="grid-secciones">
-            <div class="panel col-span-2">
-                <h3 class="panel-title">🔍 Consultas Personalizadas</h3>
-                <form class="form-grid">
-                    <div>
-                        <label>Ubicación / Piso</label>
-                        <select>
-                            <option>Todos</option>
-                            <option>Piso 1</option>
-                            <option>Piso 2</option>
-                            <option>Sede Principal (Chacao)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Tipo de Equipo</label>
-                        <select>
-                            <option>Todos</option>
-                            <option>Laptop</option>
-                            <option>Switch</option>
-                            <option>Radio Multiplexor</option>
-                        </select>
-                    </div>
-                    <div style="display: flex; align-items: flex-end;">
-                        <button type="button" class="btn btn-verde">Filtrar Datos</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="panel">
-                <h3 class="panel-title">📦 Generar Reportes</h3>
-                <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem;">Los reportes incluyen membrete oficial de CORPOELEC y códigos QR auto-generados.</p>
-                <button onclick="exportPDF()" class="btn btn-pdf">📄 Descargar Reporte PDF</button>
-                <button onclick="exportExcel()" class="btn btn-excel">📊 Descargar Data en Excel</button>
-            </div>
+    <!-- 🔐 PANTALLA DE LOGIN INICIAL -->
+    <div id="login-screen" class="login-overlay">
+        <div class="login-card">
+            <div style="font-size: 1.5rem; font-weight: 900; color: #5C2414; margin-bottom: 0.5rem;">CORPOELEC</div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem; font-weight: 600;">SIV - Control de Inventario Tecnológico</div>
+            <form id="form-login">
+                <div style="text-align: left; margin-bottom: 1rem;">
+                    <label>Usuario del Sistema</label>
+                    <input type="text" id="login-user" placeholder="Ej: admin" required>
+                </div>
+                <div style="text-align: left; margin-bottom: 1.5rem;">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-pass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-verde" style="padding: 0.75rem; font-size: 1rem;">Ingresar al Sistema</button>
+            </form>
         </div>
     </div>
-        <!-- 📝 FORMULARIO DE REGISTRO Y ASIGNACIÓN CORPOELEC -->
-        <div class="panel" style="margin-top: 1.5rem;">
-            <h3 class="panel-title">📝 Registro de Equipos y Asignación de Personal</h3>
-            <form id="form-registro" style="display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.5rem;">
-                
-                <!-- Sección de Datos del Equipo Informático/Telecom -->
-                <div>
-                    <h4 style="color: #5C2414; font-size: 0.875rem; margin-bottom: 0.75rem; border-bottom: 1px dashed #d1d5db; padding-bottom: 0.25rem;">DATOS TÉCNICOS DEL ACTIVO</h4>
-                    <div class="form-grid">
+
+    <!-- 🌐 PANEL PRINCIPAL (OCULTO HASTA VALIDAR ACCESO) -->
+    <div id="main-content" class="hidden">
+        <nav>
+            <div style="display: flex; align-items: center;">
+                <div class="nav-logo-box">CORPOELEC</div>
+                <span class="nav-title">SIV - Sistema de Inventario Tecnológico</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span id="display-rol" class="badge-rol">Rol: Administrador</span>
+                <button onclick="cerrarSesion()" style="background: none; border: none; color: white; text-decoration: underline; font-size: 0.875rem; font-weight: 600; cursor: pointer;">Cerrar Sesión</button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="banner">
+                <h2>Bienvenido al Panel de Control de Inventario</h2>
+                <p>Región Capital / Dirección de Tecnología de la Información y Telecomunicaciones</p>
+            </div>
+
+            <!-- Cajones de Estadísticas -->
+            <div class="grid-cajones">
+                <div class="cajon cajon-principal">
+                    <p class="cajon-title">Equipos Informáticos</p>
+                    <h3 class="cajon-numero" id="count-informatic">0</h3>
+                    <p class="cajon-desc">Laptops, CPUs, Monitores...</p>
+                </div>
+                <div class="cajon cajon-secundario">
+                    <p class="cajon-title">Telecomunicaciones</p>
+                    <h3 class="cajon-numero" id="count-telecom">0</h3>
+                    <p class="cajon-desc">Radios, Multiplexores, Switches...</p>
+                </div>
+                <div class="cajon cajon-secundario">
+                    <p class="cajon-title">Energía / UPS</p>
+                    <h3 class="cajon-numero" id="count-ups">0</h3>
+                    <p class="cajon-desc">Sistemas de Respaldo</p>
+                </div>
+                <div class="cajon cajon-secundario">
+                    <p class="cajon-title">Usuarios/Personal</p>
+                    <h3 class="cajon-numero" id="count-users">0</h3>
+                    <p class="cajon-desc">Personal con asignaciones</p>
+                </div>
+            </div>
+
+            <div class="grid-secciones">
+                <div class="panel col-span-2">
+                    <h3 class="panel-title">🔍 Consultas Personalizadas</h3>
+                    <form class="form-grid">
                         <div>
-                            <label>Tipo de Equipo</label>
-                            <select id="eq-tipo" required>
-                                <option value="Laptop">Laptop</option>
-                                <option value="CPU">Equipo de Mesa: CPU</option>
-                                <option value="Monitor">Equipo de Mesa: Monitor</option>
-                                <option value="Teclado">Equipo de Mesa: Teclado</option>
-                                <option value="Mouse">Equipo de Mesa: Mouse</option>
-                                <option value="Regulador">Equipo de Mesa: Regulador</option>
-                                <option value="Radio">Radio</option>
-                                <option value="Multiplexor">Multiplexor</option>
-                                <option value="Switch">Switch</option>
-                                <option value="UPS">UPS</option>
+                            <label>Ubicación / Piso</label>
+                            <select>
+                                <option>Todos</option>
+                                <option>Piso 1</option>
+                                <option>Piso 2</option>
+                                <option>Sede Principal (Chacao)</option>
                             </select>
                         </div>
                         <div>
-                            <label>Marca</label>
-                            <input type="text" id="eq-marca" placeholder="Ej: Lenovo, Cisco, HP" required>
+                            <label>Tipo de Equipo</label>
+                            <select>
+                                <option>Todos</option>
+                                <option>Laptop</option>
+                                <option>Switch</option>
+                                <option>Radio</option>
+                            </select>
                         </div>
-                        <div>
-                            <label>Modelo</label>
-                            <input type="text" id="eq-modelo" placeholder="Ej: ThinkPad E14" required>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button type="button" class="btn btn-verde">Filtrar Datos</button>
                         </div>
-                    </div>
-                    <div class="form-grid" style="margin-top: 1rem;">
-                        <div>
-                            <label>Número de Serial</label>
-                            <input type="text" id="eq-serial" placeholder="Serial único del equipo" required>
-                        </div>
-                        <div>
-                            <label>Memoria RAM (Laptops/PC)</label>
-                            <input type="text" id="eq-ram" placeholder="Ej: 16GB (Opcional)">
-                        </div>
-                        <div>
-                            <label>Capacidad Disco Duro</label>
-                            <input type="text" id="eq-disco" placeholder="Ej: 512GB SSD (Opcional)">
-                        </div>
-                    </div>
-                    <div class="form-grid" style="margin-top: 1rem;">
-                        <div>
-                            <label>Teléfono IP (Si aplica)</label>
-                            <input type="text" id="eq-ip" placeholder="Ej: Ext. 4412">
-                        </div>
-                        <div>
-                            <label>Dirección MAC Address</label>
-                            <input type="text" id="eq-mac" placeholder="Ej: 00:1A:2B:3C:4D:5E">
-                        </div>
-                        <div>
-                            <label>Ubicación / Sede</label>
-                            <input type="text" id="eq-ubicacion" placeholder="Ej: Sede Chacao" required>
-                        </div>
-                    </div>
-                    <div class="form-grid" style="margin-top: 1rem;">
-                        <div>
-                            <label>Piso / Oficina</label>
-                            <input type="text" id="eq-piso" placeholder="Ej: Piso 4 - Telecomunicaciones" required>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
-                <!-- Sección de Datos del Trabajador de Corpoelec -->
-                <div style="margin-top: 1rem;">
-                    <h4 style="color: #5C2414; font-size: 0.875rem; margin-bottom: 0.75rem; border-bottom: 1px dashed #d1d5db; padding-bottom: 0.25rem;">DATOS DEL TRABAJADOR ASIGNADO</h4>
-                    <div class="form-grid">
-                        <div>
-                            <label>Nombres</label>
-                            <input type="text" id="user-nombre" placeholder="Nombre del empleado" required>
-                        </div>
-                        <div>
-                            <label>Apellidos</label>
-                            <input type="text" id="user-apellido" placeholder="Apellido del empleado" required>
-                        </div>
-                        <div>
-                            <label>Cédula de Identidad</label>
-                            <input type="text" id="user-cedula" placeholder="Ej: V-12345678" required>
-                        </div>
-                    </div>
-                    <div class="form-grid" style="margin-top: 1rem;">
-                        <div>
-                            <label>N° de Personal (Ficha)</label>
-                            <input type="text" id="user-ficha" placeholder="Ej: CORP-10442" required>
-                        </div>
-                        <div>
-                            <label>Departamento / División</label>
-                            <input type="text" id="user-depto" placeholder="Ej: Distribución" required>
-                        </div>
-                        <div>
-                            <label>Correo Electrónico Corporativo</label>
-                            <input type="email" id="user-correo" placeholder="usuario@corpoelec.gob.ve" required>
-                        </div>
-                    </div>
+                <div class="panel">
+                    <h3 class="panel-title">📦 Generar Reportes</h3>
+                    <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem;">Los reportes incluyen el membrete oficial de la empresa.</p>
+                    <button onclick="exportExcel()" class="btn btn-excel">📊 Descargar Data en Excel</button>
                 </div>
+            </div>
 
-                <!-- Botón de Envío -->
-                <div style="text-align: right; margin-top: 1rem;">
-                    <button type="submit" class="btn btn-verde" style="width: auto; padding: 0.75rem 2.5rem; font-size: 1rem;">💾 Guardar Registro y Procesar Asignación</button>
-                </div>
-            </form>
-        </div>
-
-        <script>
-        // --- 📊 FUNCIÓN PARA ACTUALIZAR LOS CAJONES DE ESTADÍSTICAS ---
-        async function cargarContadores() {
-            try {
-                const response = await fetch('/api/dashboard/contadores');
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('count-informatic').innerText = data.informatic || 0;
-                    document.getElementById('count-telecom').innerText = data.telecom || 0;
-                    document.getElementById('count-ups').innerText = data.ups || 0;
-                    document.getElementById('count-users').innerText = data.users || 0;
-                }
-            } catch (err) {
-                console.error("Error cargando contadores del Dashboard:", err);
-            }
-        }
-
-        // --- 💾 EVENTO PARA GUARDAR REGISTROS (EQUIPO + USUARIO) ---
-        document.getElementById('form-registro').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            // Recopilar datos del formulario
-            const dataRegistro = {
-                // Datos del activo
-                tipo_equipo: document.getElementById('eq-tipo').value,
-                marca: document.getElementById('eq-marca').value,
-                modelo: document.getElementById('eq-modelo').value,
-                serial: document.getElementById('eq-serial').value,
-                ram: document.getElementById('eq-ram').value || null,
-                disco_duro: document.getElementById('eq-disco').value || null,
-                telefono_ip: document.getElementById('eq-ip').value || null,
-                mac_address: document.getElementById('eq-mac').value || null,
-                ubicacion: document.getElementById('eq-ubicacion').value,
-                piso: document.getElementById('eq-piso').value,
-                
-                // Datos del trabajador
-                nombre: document.getElementById('user-nombre').value,
-                apellido: document.getElementById('user-apellido').value,
-                cedula: document.getElementById('user-cedula').value,
-                n_personal: document.getElementById('user-ficha').value,
-                departamento: document.getElementById('user-depto').value,
-                correo_corporativo: document.getElementById('user-correo').value
-            };
-
-            try {
-                const response = await fetch('/api/inventario/registrar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dataRegistro)
-                });
-
-                const resultado = await response.json();
-
-                if (resultado.success) {
-                    alert('✅ Registro guardado con éxito en la nube y equipo asignado al trabajador.');
-                    document.getElementById('form-registro').reset(); // Limpiar formulario
-                    cargarContadores(); // Actualizar cajones de estadísticas de inmediato
-                } else {
-                    alert('❌ Error al registrar: ' + resultado.message);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('❌ Ocurrió un error de conexión con el servidor.');
-            }
-        });
-
-        // Cargar las estadísticas reales apenas abra la página web
-        window.onload = cargarContadores;
-
-        // Marcadores de posición para las funciones de descargas globales
-        function exportPDF() { alert('Función de reporte global en desarrollo. Utiliza las consultas personalizadas.'); }
-        function exportExcel() { window.location.href = '/api/reportes/excel'; }
-    </script>
-
-</body>
-</html>
+            <!-- Formulario Completo de Carga y Asignación -->
+            <div class="panel" style="margin-top: 1.5rem;">
