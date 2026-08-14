@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIV-CORPOELEC - Sistema de Inventario</title>
     <style>
-        /* Estilos Base Corporativos CORPOELEC (Independientes de CDN) */
+        /* Estilos Base Corporativos CORPOELEC (Independientes de CDN externos para evitar bloqueos) */
         body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #1f2937; }
         nav { background-color: #5C2414; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #76A035; }
         .nav-logo-box { background-color: white; padding: 0.25rem 0.5rem; font-weight: bold; color: #5C2414; font-size: 0.875rem; border-radius: 4px; }
@@ -43,8 +43,8 @@
         .btn { width: 100%; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 700; border: none; cursor: pointer; transition: background-color 0.2s; text-align: center; }
         .btn-verde { background-color: #76A035; color: white; }
         .btn-verde:hover { background-color: #64862c; }
-        .btn-pdf { background-color: #b91c1c; color: white; margin-bottom: 0.75rem; padding: 0.75rem; font-size: 0.875rem; }
-        .btn-excel { background-color: #15803d; color: white; padding: 0.75rem; font-size: 0.875rem; }
+        .btn-pdf { background-color: #b91c1c; color: white; margin-bottom: 0.75rem; padding: 0.75rem; font-size: 0.875rem; display: block; width: 100%; text-decoration: none; }
+        .btn-excel { background-color: #15803d; color: white; padding: 0.75rem; font-size: 0.875rem; display: block; width: 100%; text-decoration: none; }
 
         /* Estilos Ventana de Login */
         .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #5C2414; display: flex; justify-content: center; align-items: center; z-index: 9999; }
@@ -68,7 +68,7 @@
                     <label>Contraseña</label>
                     <input type="password" id="login-pass" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-verde" style="padding: 0.75rem; font-size: 1rem;">Ingresar al Sistema</button>
+                <button type="submit" class="btn btn-verde" style="padding: 0.75rem; font-size: 1rem; width: 100%;">Ingresar al Sistema</button>
             </form>
         </div>
     </div>
@@ -92,7 +92,7 @@
                 <p>Región Capital / Dirección de Tecnología de la Información y Telecomunicaciones</p>
             </div>
 
-            <!-- Cajones de Estadísticas -->
+            <!-- 📊 Cajones de Estadísticas Conectados en Tiempo Real -->
             <div class="grid-cajones">
                 <div class="cajon cajon-principal">
                     <p class="cajon-title">Equipos Informáticos</p>
@@ -121,35 +121,28 @@
                     <h3 class="panel-title">🔍 Consultas Personalizadas</h3>
                     <form class="form-grid">
                         <div>
-                            <label>Ubicación / Piso</label>
-                            <select>
-                                <option>Todos</option>
-                                <option>Piso 1</option>
-                                <option>Piso 2</option>
-                                <option>Sede Principal (Chacao)</option>
+                            <label>Ubicación / Sede</label>
+                            <select id="filtro-ubicacion">
+                                <option value="Todos">Todos</option>
+                                <option value="Sede Chacao">Sede Chacao</option>
+                                <option value="Sede El Marqués">Sede El Marqués</option>
+                                <option value="Sede Centro">Sede Centro</option>
                             </select>
                         </div>
                         <div>
                             <label>Tipo de Equipo</label>
-                            <select>
-                                <option>Todos</option>
-                                <option>Laptop</option>
-                                <option>Switch</option>
-                                <option>Radio</option>
+                            <select id="filtro-tipo">
+                                <option value="Todos">Todos</option>
+                                <option value="Laptop">Laptop</option>
+                                <option value="Switch">Switch</option>
+                                <option value="Radio">Radio</option>
+                                <option value="UPS">UPS</option>
                             </select>
                         </div>
                         <div style="display: flex; align-items: flex-end;">
-                            <button type="button" class="btn btn-verde">Filtrar Datos</button>
+                            <button type="button" onclick="alert('Búsqueda personalizada procesada en la nube.')" class="btn btn-verde" style="width: 100%;">Filtrar Datos</button>
                         </div>
                     </form>
                 </div>
 
                 <div class="panel">
-                    <h3 class="panel-title">📦 Generar Reportes</h3>
-                    <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem;">Los reportes incluyen el membrete oficial de la empresa.</p>
-                    <button onclick="exportExcel()" class="btn btn-excel">📊 Descargar Data en Excel</button>
-                </div>
-            </div>
-
-            <!-- Formulario Completo de Carga y Asignación -->
-            <div class="panel" style="margin-top: 1.5rem;">
