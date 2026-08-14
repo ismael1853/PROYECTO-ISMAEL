@@ -5,50 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIV-CORPOELEC - Sistema de Inventario</title>
     <style>
-        /* Estilos Base Corporativos CORPOELEC (Independientes de CDN externos para evitar bloqueos) */
-        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; color: #1f2937; }
+        body { font-family: sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; }
         nav { background-color: #5C2414; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #76A035; }
-        .nav-logo-box { background-color: white; padding: 0.25rem 0.5rem; font-weight: bold; color: #5C2414; font-size: 0.875rem; border-radius: 4px; }
-        .nav-title { font-size: 1.25rem; font-weight: 700; tracking-wider: 0.05em; margin-left: 0.75rem; }
-        .badge-rol { background-color: #76A035; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; }
+        .nav-logo-box { background-color: white; padding: 0.25rem 0.5rem; font-weight: bold; color: #5C2414; border-radius: 4px; }
         .container { padding: 1.5rem; max-width: 80rem; margin: 0 auto; }
-        .banner { background-color: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #76A035; margin-bottom: 1.5rem; }
-        .banner h2 { margin: 0; font-size: 1.125rem; color: #1f2937; }
-        .banner p { margin: 0.25rem 0 0 0; font-size: 0.875rem; color: #4b5563; }
+        .banner { background-color: white; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #76A035; margin-bottom: 1.5rem; }
         
-        /* Contenedores de los Cajones de Estadísticas */
-        .grid-cajones { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        @media (min-width: 768px) { .grid-cajones { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        /* Cajones de Estadísticas */
+        .grid-cajones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        @media (max-width: 768px) { .grid-cajones { grid-template-columns: 1fr; } }
         .cajon { padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .cajon-principal { background-color: #5C2414; color: white; border-bottom: 8px solid #76A035; }
         .cajon-secundario { background-color: white; color: #1f2937; border-bottom: 8px solid #9ca3af; }
-        .cajon-title { font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; opacity: 0.9; }
-        .cajon-secundario .cajon-title { color: #6b7280; }
         .cajon-numero { font-size: 2.25rem; font-weight: 900; margin: 0.5rem 0 0 0; }
-        .cajon-secundario .cajon-numero { color: #5C2414; }
-        .cajon-desc { font-size: 0.75rem; margin: 0.5rem 0 0 0; opacity: 0.8; }
-        .cajon-secundario .cajon-desc { color: #9ca3af; }
-
-        /* Estructura de Paneles y Formularios */
-        .grid-secciones { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1.5rem; }
-        @media (min-width: 1024px) { .grid-secciones { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        .panel { background-color: white; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .col-span-2 { grid-column: span 2 / span 2; }
-        .panel-title { font-size: 1.125rem; font-weight: 700; color: #5C2414; margin: 0 0 1rem 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1rem; }
-        @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        label { display: block; font-size: 0.75rem; font-weight: 700; color: #374151; text-transform: uppercase; }
-        select, input { width: 100%; margin-top: 0.25rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-size: 0.875rem; background-color: #f9fafb; box-sizing: border-box; }
-        .btn { width: 100%; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 700; border: none; cursor: pointer; transition: background-color 0.2s; text-align: center; }
-        .btn-verde { background-color: #76A035; color: white; }
-        .btn-verde:hover { background-color: #64862c; }
-        .btn-pdf { background-color: #b91c1c; color: white; margin-bottom: 0.75rem; padding: 0.75rem; font-size: 0.875rem; display: block; width: 100%; text-decoration: none; }
-        .btn-excel { background-color: #15803d; color: white; padding: 0.75rem; font-size: 0.875rem; display: block; width: 100%; text-decoration: none; }
+        /* Formularios y Paneles */
+        .panel { background-color: white; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+        label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #374151; }
+        input, select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px solid #d1d5db; border-radius: 0.25rem; box-sizing: border-box; }
+        .btn { padding: 0.75rem; border-radius: 0.25rem; font-weight: 700; border: none; cursor: pointer; text-align: center; }
+        .btn-verde { background-color: #76A035; color: white; width: 100%; }
+        .btn-excel { background-color: #15803d; color: white; width: 100%; }
 
-        /* Estilos Ventana de Login */
+        /* Login Pantalla */
         .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #5C2414; display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: white; padding: 2.5rem; border-radius: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 24rem; border-top: 8px solid #76A035; text-align: center; }
+        .login-card { background: white; padding: 2.5rem; border-radius: 0.75rem; width: 100%; max-width: 20rem; border-top: 8px solid #76A035; text-align: center; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -58,91 +41,143 @@
     <div id="login-screen" class="login-overlay">
         <div class="login-card">
             <div style="font-size: 1.5rem; font-weight: 900; color: #5C2414; margin-bottom: 0.5rem;">CORPOELEC</div>
-            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem; font-weight: 600;">SIV - Control de Inventario Tecnológico</div>
-            <form id="form-login">
-                <div style="text-align: left; margin-bottom: 1rem;">
-                    <label>Usuario del Sistema</label>
-                    <input type="text" id="login-user" placeholder="Ej: admin" required>
-                </div>
-                <div style="text-align: left; margin-bottom: 1.5rem;">
-                    <label>Contraseña</label>
-                    <input type="password" id="login-pass" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-verde" style="padding: 0.75rem; font-size: 1rem; width: 100%;">Ingresar al Sistema</button>
-            </form>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem; font-weight: 600;">SIV - Inventario Tecnológico</div>
+            
+            <div style="text-align: left; margin-bottom: 1rem;">
+                <label>Usuario del Sistema</label>
+                <input type="text" id="login-user" value="admin">
+            </div>
+            <div style="text-align: left; margin-bottom: 1.5rem;">
+                <label>Contraseña</label>
+                <input type="password" id="login-pass" value="corpoelec2026">
+            </div>
+            <!-- Botón con Evento Directo de Clic para Evitar Fallas -->
+            <button type="button" onclick="entrarAlSistema()" class="btn btn-verde">Ingresar al Sistema</button>
         </div>
     </div>
 
-    <!-- 🌐 PANEL PRINCIPAL (OCULTO HASTA VALIDAR ACCESO) -->
+    <!-- 🌐 PANEL PRINCIPAL (OCULTO AL INICIO) -->
     <div id="main-content" class="hidden">
         <nav>
             <div style="display: flex; align-items: center;">
                 <div class="nav-logo-box">CORPOELEC</div>
-                <span class="nav-title">SIV - Sistema de Inventario Tecnológico</span>
+                <span style="font-size: 1.25rem; font-weight: 700; margin-left: 0.75rem;">SIV - Sistema de Inventario</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <span id="display-rol" class="badge-rol">Rol: Administrador</span>
-                <button onclick="cerrarSesion()" style="background: none; border: none; color: white; text-decoration: underline; font-size: 0.875rem; font-weight: 600; cursor: pointer;">Cerrar Sesión</button>
+            <div>
+                <button onclick="cerrarSesion()" style="background: none; border: none; color: white; text-decoration: underline; font-weight: 600; cursor: pointer;">Cerrar Sesión</button>
             </div>
         </nav>
 
         <div class="container">
             <div class="banner">
-                <h2>Bienvenido al Panel de Control de Inventario</h2>
-                <p>Región Capital / Dirección de Tecnología de la Información y Telecomunicaciones</p>
+                <h2 style="margin:0;">Bienvenido al Panel de Control de Inventario</h2>
+                <p style="margin: 4px 0 0 0; color: #4b5563;">Dirección de Tecnología de la Información y Telecomunicaciones</p>
             </div>
 
-            <!-- 📊 Cajones de Estadísticas Conectados en Tiempo Real -->
+            <!-- Cajones de Estadísticas -->
             <div class="grid-cajones">
                 <div class="cajon cajon-principal">
-                    <p class="cajon-title">Equipos Informáticos</p>
+                    <p style="margin:0; font-size:0.875rem; text-transform:uppercase;">Equipos Informáticos</p>
                     <h3 class="cajon-numero" id="count-informatic">0</h3>
-                    <p class="cajon-desc">Laptops, CPUs, Monitores...</p>
                 </div>
                 <div class="cajon cajon-secundario">
-                    <p class="cajon-title">Telecomunicaciones</p>
-                    <h3 class="cajon-numero" id="count-telecom">0</h3>
-                    <p class="cajon-desc">Radios, Multiplexores, Switches...</p>
+                    <p style="margin:0; font-size:0.875rem; text-transform:uppercase; color:#6b7280;">Telecomunicaciones</p>
+                    <h3 class="cajon-numero" id="count-telecom" style="color:#5C2414;">0</h3>
                 </div>
                 <div class="cajon cajon-secundario">
-                    <p class="cajon-title">Energía / UPS</p>
-                    <h3 class="cajon-numero" id="count-ups">0</h3>
-                    <p class="cajon-desc">Sistemas de Respaldo</p>
+                    <p style="margin:0; font-size:0.875rem; text-transform:uppercase; color:#6b7280;">Energía / UPS</p>
+                    <h3 class="cajon-numero" id="count-ups" style="color:#5C2414;">0</h3>
                 </div>
                 <div class="cajon cajon-secundario">
-                    <p class="cajon-title">Usuarios/Personal</p>
-                    <h3 class="cajon-numero" id="count-users">0</h3>
-                    <p class="cajon-desc">Personal con asignaciones</p>
+                    <p style="margin:0; font-size:0.875rem; text-transform:uppercase; color:#6b7280;">Personal Registrado</p>
+                    <h3 class="cajon-numero" id="count-users" style="color:#5C2414;">0</h3>
                 </div>
             </div>
 
-            <div class="grid-secciones">
-                <div class="panel col-span-2">
-                    <h3 class="panel-title">🔍 Consultas Personalizadas</h3>
-                    <form class="form-grid">
-                        <div>
-                            <label>Ubicación / Sede</label>
-                            <select id="filtro-ubicacion">
-                                <option value="Todos">Todos</option>
-                                <option value="Sede Chacao">Sede Chacao</option>
-                                <option value="Sede El Marqués">Sede El Marqués</option>
-                                <option value="Sede Centro">Sede Centro</option>
-                            </select>
-                        </div>
+            <!-- Reportes -->
+            <div class="panel">
+                <h3 style="color:#5C2414; margin-top:0;">📦 Reportes Oficiales</h3>
+                <button onclick="exportExcel()" class="btn btn-excel">📊 Descargar Base de Datos (Excel)</button>
+            </div>
+
+            <!-- Formulario de Registro -->
+            <div class="panel">
+                <h3 style="color:#5C2414; margin-top:0;">📝 Registro y Asignación de Activos</h3>
+                <form id="form-registro">
+                    <div class="form-grid">
                         <div>
                             <label>Tipo de Equipo</label>
-                            <select id="filtro-tipo">
-                                <option value="Todos">Todos</option>
+                            <select id="eq-tipo">
                                 <option value="Laptop">Laptop</option>
+                                <option value="CPU">CPU</option>
+                                <option value="Monitor">Monitor</option>
                                 <option value="Switch">Switch</option>
-                                <option value="Radio">Radio</option>
                                 <option value="UPS">UPS</option>
                             </select>
                         </div>
-                        <div style="display: flex; align-items: flex-end;">
-                            <button type="button" onclick="alert('Búsqueda personalizada procesada en la nube.')" class="btn btn-verde" style="width: 100%;">Filtrar Datos</button>
+                        <div>
+                            <label>Marca</label>
+                            <input type="text" id="eq-marca" required>
                         </div>
-                    </form>
-                </div>
+                        <div>
+                            <label>Modelo</label>
+                            <input type="text" id="eq-modelo" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid" style="margin-top:1rem;">
+                        <div>
+                            <label>Serial</label>
+                            <input type="text" id="eq-serial" required>
+                        </div>
+                        <div>
+                            <label>Cédula Trabajador</label>
+                            <input type="text" id="user-cedula" required>
+                        </div>
+                        <div>
+                            <label>Nombre Trabajador</label>
+                            <input type="text" id="user-nombre" required>
+                        </div>
+                    </div>
 
-                <div class="panel">
+                    <div class="form-grid" style="margin-top:1rem;">
+                        <div>
+                            <label>Ficha Personal</label>
+                            <input type="text" id="user-ficha" required>
+                        </div>
+                        <div>
+                            <label>Departamento</label>
+                            <input type="text" id="user-depto" required>
+                        </div>
+                        <div>
+                            <label>Correo Corporativo</label>
+                            <input type="email" id="user-correo" required>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-verde" style="width:auto; padding: 0.75rem 2rem;">💾 Registrar Activo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNCIÓN DE ENTRADA INMEDIATA (A PRUEBA DE FALLAS) ---
+        function entrarAlSistema() {
+            const u = document.getElementById('login-user').value.trim();
+            const c = document.getElementById('login-pass').value.trim();
+
+            if (u === 'admin' && c === 'corpoelec2026') {
+                // Forzar el cambio de pantallas de inmediato
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                // Cargar estadísticas reales desde la base de datos en la nube
+                cargarContadores();
+            } else {
+                alert('Usuario o clave incorrectos.');
+            }
+        }
+
