@@ -164,20 +164,27 @@
     </div>
 
     <script>
-        // --- FUNCIÓN DE ENTRADA INMEDIATA (A PRUEBA DE FALLAS) ---
+                // --- FUNCIÓN DE ENTRADA INMEDIATA LOCAL (ELIMINA VALIDACIÓN DE RED) ---
         function entrarAlSistema() {
             const u = document.getElementById('login-user').value.trim();
             const c = document.getElementById('login-pass').value.trim();
 
+            console.log("Forzando apertura del sistema...");
+
+            // Validación local instantánea en tu propia pantalla
             if (u === 'admin' && c === 'corpoelec2026') {
-                // Forzar el cambio de pantallas de inmediato
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-content').classList.remove('hidden');
+                // Comando directo para desaparecer el bloqueo del Login
+                document.getElementById('login-screen').style.setProperty('display', 'none', 'important');
                 
-                // Cargar estadísticas reales desde la base de datos en la nube
+                // Comando directo para forzar la visibilidad del panel de CORPOELEC
+                document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('main-content').style.display = 'block';
+                
+                // Intentar leer los contadores de fondo
                 cargarContadores();
             } else {
                 alert('Usuario o clave incorrectos.');
             }
         }
+
 
