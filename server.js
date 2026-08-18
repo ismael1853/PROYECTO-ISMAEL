@@ -12,10 +12,11 @@ app.use(express.json());
 // Servir la interfaz estática desde la carpeta public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Conexión a la Base de Datos en la Nube (Supabase)
+// Configuración de la Base de Datos en la Nube (Supabase)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 5000 // Si tarda más de 5 segundos, abortar para no congelar el botón
 });
 
 // Ruta raíz obligatoria para el inicio del sistema
@@ -23,45 +24,48 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- 🔐 LOGIC DE ACCESOS Y BITÁCORA (CORREGIDO A PRUEBA DE FALLOS) ---
+// --- 🔐 LOGIC DE ACCESOS (SISTEMA ULTRA-PROTEGIDO ANTI-CONGELAMIENTO) ---
 app.post('/api/auth/login', async (req, res) => {
     const { usuario, clave } = req.body;
-    const ipOrigen = req.ip;
+    
+    console.log(`Petición de acceso recibida para el usuario: ${usuario}`);
 
-    console.log(`Intento de login recibido: Usuario=${usuario}`);
-
-    // Mecanismo de emergencia: Si es el admin principal, dar acceso directo inmediato
+    // GARANTÍA ABSOLUTA DE ENTRADA: Si es el admin principal, darle acceso en milisegundos
     if (usuario === 'admin' && clave === 'corpoelec2026') {
-        try {
-            await pool.query(
-                'INSERT INTO bitacora_accesos (usuario, ip_origen, evento) VALUES ($1, $2, $3)',
-                ['admin', ipOrigen, 'Inicio de sesión exitoso (Admin)']
-            ).catch(e => console.log("Omitiendo registro en bitácora por tabla ausente"));
-        } catch (e) {}
+        // Intentar guardar en la bitácora de Supabase de fondo, pero no detener el acceso si falla
+        pool.query(
+            'INSERT INTO bitacora_accesos (usuario, ip_origen, evento) VALUES ($1, $2, $3)',
+            ['admin', req.ip, 'Inicio de sesión exitoso']
+        ).catch(err => console.log("Aviso: No se pudo escribir en la bitácora de Supabase. Acceso concedido igual."));
+
         return res.json({ success: true, rol: 'Admin' });
     }
 
-    // Validación normal para otros usuarios en la nube
+    // Validación secundaria para otros usuarios alternos
     try {
         const result = await pool.query('SELECT * FROM usuarios_sistema WHERE usuario = $1', [usuario]);
         if (result.rows.length === 0) {
             return res.status(401).json({ success: false, message: "Usuario no registrado" });
         }
-        
-        const user = result.rows[0]; // Corrección crítica de lectura de fila
+        const user = result.rows[0];
         if (user.clave_hash === clave) {
             return res.json({ success: true, rol: user.rol || 'Admin' });
         }
         res.status(401).json({ success: false, message: "Clave incorrecta" });
     } catch (err) {
-        console.error("Error en login:", err);
-        res.status(500).json({ success: false, message: "Error interno del servidor" });
+        console.error("Error en base de datos al autenticar, aplicando pase de emergencia:", err.message);
+        // Si Supabase se cae, igual devolvemos éxito si las credenciales coinciden con el administrador
+        if (usuario === 'admin' && clave === 'corpoelec2026') {
+            return res.json({ success: true, rol: 'Admin' });
+        }
+        res.status(500).json({ success: false, message: "Error interno" });
     }
 });
 
-// --- 📊 CAJÓN DE ESTADÍSTICAS (CORREGIDO) ---
+// --- 📊 CAJÓN DE ESTADÍSTICAS (PANTALLA PRINCIPAL PROTEGIDA) ---
 app.get('/api/dashboard/contadores', async (req, res) => {
     try {
+        // Consultas con protección de tiempo de respuesta
         const informatic = await pool.query("SELECT COUNT(*)::int FROM inventario WHERE tipo_equipo IN ('Laptop', 'CPU', 'Monitor', 'Teclado', 'Mouse', 'Regulador')");
         const telecom = await pool.query("SELECT COUNT(*)::int FROM inventario WHERE tipo_equipo IN ('Radio', 'Multiplexor', 'Switch')");
         const ups = await pool.query("SELECT COUNT(*)::int FROM inventario WHERE tipo_equipo = 'UPS'");
@@ -74,16 +78,17 @@ app.get('/api/dashboard/contadores', async (req, res) => {
             users: users.rows[0].count || 0
         });
     } catch (err) {
-        console.error("Error en contadores:", err);
-        // Devolver ceros si las tablas no responden para no romper la pantalla
+        console.error("Supabase no responde o las tablas no existen. Devolviendo ceros de contingencia:", err.message);
+        // Si hay un error en la nube, enviamos ceros para que la interfaz cargue perfectamente y no se rompa
         res.json({ informatic: 0, telecom: 0, ups: 0, users: 0 });
     }
 });
 
 // --- 💾 ENDPOINT: REGISTRAR TRABAJADOR Y ASIGNAR EQUIPO ---
 app.post('/api/inventario/registrar', async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.connect();
         await client.query('BEGIN');
         const {
             cedula, nombre, apellido, n_personal, departamento, correo_corporativo,
@@ -96,7 +101,7 @@ app.post('/api/inventario/registrar', async (req, res) => {
             ON CONFLICT (cedula) 
             DO UPDATE SET departamento = $5, correo_corporativo = $6;
         `;
-        await client.query(queryPersonal, [cedula, nombre, apellido, n_personal, departamento, correo_corporativo]);
+        await client.query(queryPersonal, [cedula, nombre, `${apellido || ''}`.trim(), n_personal, departamento, correo_corporativo]);
 
         const queryInventario = `
             INSERT INTO inventario (tipo_equipo, marca, modelo, serial, ram, disco_duro, telefono_ip, mac_address, ubicacion, piso, cedula_asignado)
@@ -107,11 +112,11 @@ app.post('/api/inventario/registrar', async (req, res) => {
         await client.query('COMMIT');
         res.json({ success: true, message: "Registro completado con éxito" });
     } catch (err) {
-        await client.query('ROLLBACK');
-        console.error("Error en guardado:", err);
-        res.status(500).json({ success: false, message: "Error al guardar en la base de datos." });
+        if (client) await client.query('ROLLBACK');
+        console.error("Error al guardar en base de datos:", err.message);
+        res.status(500).json({ success: false, message: "Error al guardar en la nube de Supabase: " + err.message });
     } finally {
-        client.release();
+        if (client) client.release();
     }
 });
 
@@ -157,4 +162,4 @@ app.get('/api/reportes/excel', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor de CORPOELEC activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`Servidor de CORPOELEC activo y protegido en puerto ${PORT}`));
